@@ -29,13 +29,18 @@ IsoHelper.getInfoClass = function(isoObject)
     for i = 0, numField - 1 do
         local classField = getClassField(isoObject, i)
         if classField ~= nil then
-            local value = getClassFieldVal(isoObject, classField)
-            local field = {
-                name = classField:getName(),
-                type = classField:getType():getName(),
-                value = value
-            }
-            table.insert(data.fields, field)
+                classField:setAccessible(true);
+                local value = "?"
+                pcall(function()
+                    value = getClassFieldVal(isoObject, classField)
+                end)
+                local field = {
+                    name = classField:getName(),
+                    type = classField:getType():getName(),
+                    value = value,
+                    modifier = classField:getModifiers()
+                }
+                table.insert(data.fields, field)
         end
     end
     if IsoHelper.readFunction then
@@ -58,6 +63,33 @@ IsoHelper.getInfoClass = function(isoObject)
                 table.insert(data.methods, method)
             end
         end
+    end
+    return data
+end
+
+IsoHelper.dumpIsoObject = function(isoObject)
+    local data = {}
+    if instanceof(isoObject, 'IsoMovingObject') then
+        data['id'] = isoObject:getID()
+        data['weight'] = isoObject:getWeight()
+        data['width'] = isoObject:getWidth()
+        data['x'] = isoObject:getX()
+        data['y'] = isoObject:getY()
+        data['z'] = isoObject:getZ()
+    end
+    if instanceof(isoObject, 'IsoGameCharacter') then
+        data['is_npc'] = isoObject:isNPC()
+        data['is_zombie'] = isoObject:isZombie()
+        data['is_female'] = isoObject:isFemale()
+        data['is_dead'] = isoObject:isDead()
+        data['age'] = isoObject:getAge()
+    end
+    if instanceof(isoObject, 'HandWeapon') then
+        data['id'] = isoObject:getID()
+        data['category'] = isoObject:getCategory()
+        data['sub_category'] = isoObject:getSubCategory()
+        data['display_name'] = isoObject:getDisplayName()
+        data['type'] = isoObject:getType()
     end
     return data
 end

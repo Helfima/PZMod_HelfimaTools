@@ -1,3 +1,5 @@
 IGUI_EN = {
-    IGUI_InspectUI_Title="Inspect"
+    IGUI_InspectUI_Title="Inspect",
+    IGUI_EventsUI_Title="Events"
+    IGUI_EventParametersUI_Title="Event Parameters"
 }

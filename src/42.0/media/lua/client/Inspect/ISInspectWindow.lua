@@ -4,25 +4,17 @@ local UI_BORDER_SPACING = 10
 local BUTTON_HGT = getTextManager():getFontHeight(UIFont.Small) + 6
 
 ISInspectWindow = ISCollapsableWindow:derive("ISInspectWindow");
-ISScrollingListBox.stopPrerender = false
-ISInspectWindow.path = "PZMod_HelfimaTools/42.0/media/lua/client/Inspect/ISInspectWindow.lua"
 ISInspectWindow.instance = nil
 ISInspectWindow.largeFontHeight = getTextManager():getFontHeight(UIFont.Large)
 ISInspectWindow.mediumFontHeight = getTextManager():getFontHeight(UIFont.Medium)
 ISInspectWindow.smallFontHeight = getTextManager():getFontHeight(UIFont.Small)
+ISInspectWindow.itemheight = getTextManager():getFontHeight(UIFont.Small)
 ISInspectWindow.bottomInfoHeight = BUTTON_HGT
 ISInspectWindow.qwertyConfiguration = true
-ISInspectWindow.bottomTextSpace = "     "
 
 ISInspectWindow.objectList = {}
 ISInspectWindow.fieldListName = {}
 ISInspectWindow.textManager = getTextManager()
-ISInspectWindow.itemheight = 25
-ISInspectWindow.columns = {
-    {name="column1", size=100},
-    {name="column2", size=100},
-    {name="column2", size=100}
-}
 
 function ISInspectWindow:initialise()
     ISCollapsableWindow.initialise(self);
@@ -53,12 +45,6 @@ function ISInspectWindow:new(x, y, width, height, character)
     o.moveWithMouse = true;
     o.LabelDash = "-"
     o.LabelDashWidth = getTextManager():MeasureStringX(UIFont.Small, o.LabelDash)
-    -- add that length to the extra width that's guaranteed
-    --local rightSide = UI_BORDER_SPACING*3 + 42 + recipeWidth + 2
-    -- the recipe list on the left side is 3/10 of the total width, so divide the right side width by 7, and multiply by 3 to get the left side width
-    --local leftSide = (rightSide / 7) * 3
-    -- now take the max length between the above width, and the width of the text at the bottom of the window
-    --o.minimumWidth = math.max(getTextManager():MeasureStringX(UIFont.Small, o.bottomInfoText1)+UI_BORDER_SPACING*2+2, leftSide+rightSide+1)
     o.minimumWidth = width
     o:setWidth(o.minimumWidth)
     o.minimumHeight = 600+(getCore():getOptionFontSizeReal()-1)*60
