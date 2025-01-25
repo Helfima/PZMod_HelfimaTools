@@ -84,6 +84,9 @@ IsoHelper.dumpIsoObject = function(isoObject)
         data['is_dead'] = isoObject:isDead()
         data['age'] = isoObject:getAge()
     end
+    if instanceof(isoObject, 'IsoZombie') then
+        --data['id'] = infos.ZombieID
+    end
     if instanceof(isoObject, 'HandWeapon') then
         data['id'] = isoObject:getID()
         data['category'] = isoObject:getCategory()

@@ -38,12 +38,17 @@ function ISHTScrollingListBox:doDrawItem(y, item, alt)
 	if #self.columns > 0 then
 		local is_need_repaint = false
 		for i = 1, #self.columns, 1 do
+			local column = self.columns[i]
 			local converter = tostring
-			if self.columns[i]["converter"] ~= nil then
-				converter = self.columns[i]["converter"]
+			if column["converter"] ~= nil then
+				converter = column["converter"]
 			end
-			local value = converter(item.item[self.columns[i].attribute] or item.text or "nil")
-			local size = self.columns[i].size
+			local text = item.text
+			if column.attribute ~= nil and item.item ~= nil and item.item[column.attribute] ~= nil then
+				text = item.item[column.attribute]
+			end
+			local value = converter(text or "nil")
+			local size = column.size
 			if i < #self.columns then
 				self:setStencilRect(xoffset, clipY, size, clipY2 - clipY)
 				self:drawText(value, xoffset + UI_BORDER_SPACING, y + 3, 1, 1, 1, a, self.font);

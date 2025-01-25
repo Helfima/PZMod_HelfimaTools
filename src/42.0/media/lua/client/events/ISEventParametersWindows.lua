@@ -97,7 +97,7 @@ function ISEventParametersWindows:createChildren()
     childUI.drawBorder = true
     childUI.target = self
     childUI.uiLabel = uiLabel
-    childUI:addColumn("Parameter", "name", 250);
+    childUI:addColumn("Parameter", nil, 250);
     self:addChild(childUI)
     self.parameterListBox = childUI
     local ui_width = 0
@@ -106,7 +106,7 @@ function ISEventParametersWindows:createChildren()
     end
     childUI:setWidth(ui_width)
 
-    local offset_x = ui_width + 2 * UI_BORDER_SPACING
+    offset_x = offset_x + ui_width + UI_BORDER_SPACING
 
     childUI = ISHTScrollingListBox:new(offset_x, offset_y, 200, listBoxHeight)
     childUI:initialise()

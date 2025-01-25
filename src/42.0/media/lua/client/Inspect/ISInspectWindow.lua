@@ -46,12 +46,11 @@ function ISInspectWindow:new(x, y, width, height, character)
     o.LabelDash = "-"
     o.LabelDashWidth = getTextManager():MeasureStringX(UIFont.Small, o.LabelDash)
     o.minimumWidth = width
-    o:setWidth(o.minimumWidth)
-    o.minimumHeight = 600+(getCore():getOptionFontSizeReal()-1)*60
+    o.minimumHeight = height
     o.title = getText("IGUI_InspectUI_Title");
     o.character = character;
     o.playerNum = character and character:getPlayerNum() or -1
-    o:setResizable(true);
+    o:setResizable(false);
     o.lineH = 10;
     o.fgBar = {r=0, g=0.6, b=0, a=0.7 }
     o:setWantKeyEvents(true);
@@ -69,7 +68,7 @@ end
 
 function ISInspectWindow.OnInstanciatePanel()
     if ISInspectWindow.instance == nil then
-        ISInspectWindow.instance = ISInspectWindow:new(0,0,1200,600,getPlayer());
+        ISInspectWindow.instance = ISInspectWindow:new(0,0,600,200,getPlayer());
         ISInspectWindow.instance:initialise();
         ISInspectWindow.instance:addToUIManager();
         ISInspectWindow.instance:setVisible(true);
@@ -81,68 +80,38 @@ function ISInspectWindow.OnInstanciatePanel()
     ISInspectWindow.instance:updateDataListBox()
 end
 
-function ISInspectWindow:drawItemList(y, item, alt)
-    local a = 0.9
-    self:drawRectBorder(0, (y), self:getWidth(), self.itemheight - 1, a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
-    if self.selected == item.index then
-        self:drawRect(0, (y), self:getWidth(), self.itemheight - 1, 0.3, 0.7, 0.35, 0.15)
+function ISInspectWindow:createChildren()
+    ISCollapsableWindow.createChildren(self)
+
+    local listBoxHeight = 600
+    local offset_y = 65
+    local offset_x = UI_BORDER_SPACING
+    local final_height = listBoxHeight + offset_y + UI_BORDER_SPACING
+    self:setHeight(final_height)
+
+    local childUI = ISHTScrollingListBox:new(offset_x, offset_y, 200, listBoxHeight)
+    childUI:initialise()
+    childUI:instantiate()
+    childUI:setOnMouseDownFunction(self, self.onObjectListMouseDown)
+    childUI.selected = 0
+    childUI.joypadParent = self
+    childUI.font = UIFont.NewSmall
+    childUI.itemheight = self.textManager:getFontHeight(childUI.font)
+    childUI.drawBorder = true
+    childUI.target = self
+    childUI.uiLabel = uiLabel
+    childUI:addColumn("Object", "name", 250);
+    self:addChild(childUI)
+    self.objectListBox = childUI
+    local ui_width = 0
+    for _, column in pairs(childUI.columns) do
+        ui_width = ui_width + column.size
     end
-    self:drawText( item.text, 10, y + 2, 1, 1, 1, a, self.font)
-    return y + self.itemheight
-end
+    childUI:setWidth(ui_width)
 
-function ISInspectWindow:addColumn(columnName, attribute, size)
-	table.insert(self.columns, {name = columnName, attribute = attribute, size = size});
-end
+    offset_x = offset_x + ui_width + UI_BORDER_SPACING
 
-function ISInspectWindow:drawColumnList(y, item, alt)
-    if y + self:getYScroll() + self.itemheight < 0 or y + self:getYScroll() >= self.height then
-        return y + self.itemheight
-    end
-    
-    local a = 0.9;
-
-    if self.selected == item.index then
-        self:drawRect(0, (y), self:getWidth(), self.itemheight, 0.3, 0.7, 0.35, 0.15);
-    end
-
-    if alt then
-        self:drawRect(0, (y), self:getWidth(), self.itemheight, 0.3, 0.6, 0.5, 0.5);
-    end
-
-    self:drawRectBorder(0, (y), self:getWidth(), self.itemheight, a, self.borderColor.r, self.borderColor.g, self.borderColor.b);
-
-    local xoffset = UI_BORDER_SPACING;
-
-    local clipY = math.max(0, y + self:getYScroll())
-    local clipY2 = math.min(self.height, y + self:getYScroll() + self.itemheight)
-    
-    local is_need_repaint = false
-    for i = 1, #self.columns, 1 do
-        local value = tostring(item.item[self.columns[i].attribute] or "nil")
-        local clipX = self.columns[i].size
-        if i < #self.columns then
-            local clipX2 = self.columns[i + 1].size
-            self:setStencilRect(clipX, clipY, clipX2 - clipX, clipY2 - clipY)
-            self:drawText(value, clipX + xoffset, y + 3, 1, 1, 1, a, self.font);
-            self:clearStencilRect()
-            is_need_repaint = true
-        else
-            self:drawText(value, clipX + xoffset, y + 3, 1, 1, 1, a, self.font);
-        end
-    end
-    if is_need_repaint then
-        self:repaintStencilRect(0, clipY, self.width - 10, clipY2 - clipY)
-    end
-
-    return y + self.itemheight;
-end
-
-function ISInspectWindow:createScrollingListBox(x, y, width, height, title)
-    local uiLabel = ISLabel:new(x, y, 22, title, 1, 1, 1, 1, UIFont.Small, true);
-    self:addChild(uiLabel);
-
-    local childUI = ISScrollingListBox:new(x, y + 60, width, height)
+    childUI = ISHTScrollingListBox:new(offset_x, offset_y, 200, listBoxHeight)
     childUI:initialise()
     childUI:instantiate()
     childUI.selected = 0
@@ -152,27 +121,42 @@ function ISInspectWindow:createScrollingListBox(x, y, width, height, title)
     childUI.drawBorder = true
     childUI.target = self
     childUI.uiLabel = uiLabel
+    childUI:addColumn("Field", "name", 200);
+    --childUI:addColumn("Modifier", "modifier", 150);
+    childUI:addColumn("Type", "type", 250);
+    childUI:addColumn("Value", "value", 600);
     self:addChild(childUI)
-    return childUI
-end
+    self.dataListBox = childUI
 
-function ISInspectWindow:createChildren()
-    ISCollapsableWindow.createChildren(self)
+    local ui_width = 0
+    for _, column in pairs(childUI.columns) do
+        ui_width = ui_width + column.size
+    end
+    childUI:setWidth(ui_width)
 
-    local listBoxHeight = self.height - 100
-    
-    self.objectListBox = self:createScrollingListBox(10, 65, 150, listBoxHeight, "Objects")
-    self.objectListBox.doDrawItem = self.drawItemList
-    self.objectListBox:setOnMouseDownFunction(self, self.onObjectListMouseDown)
-    self.objectListBox.addColumn = self.addColumn
-    self.objectListBox:addColumn("Name", "name", 0);
-    
-    self.dataListBox = self:createScrollingListBox(220, 65, 150, listBoxHeight, "Data")
-    self.dataListBox.doDrawItem = self.drawColumnList
-    self.dataListBox.addColumn = self.addColumn
-    self.dataListBox:addColumn("Name", "name", 0);
-    self.dataListBox:addColumn("Type", "type", 200 + (getCore():getOptionFontSizeReal()*20));
-    self.dataListBox:addColumn("Value", "value", 400 + (getCore():getOptionFontSizeReal()*20));
+    offset_x = offset_x + ui_width + UI_BORDER_SPACING
+
+    childUI = ISHTScrollingListBox:new(offset_x, offset_y, 200, listBoxHeight)
+    childUI:initialise()
+    childUI:instantiate()
+    childUI.selected = 0
+    childUI.joypadParent = self
+    childUI.font = UIFont.NewSmall
+    childUI.itemheight = self.textManager:getFontHeight(childUI.font)
+    childUI.drawBorder = true
+    childUI.target = self
+    childUI.uiLabel = uiLabel
+    childUI:addColumn("Data", "name", 400);
+    self:addChild(childUI)
+    self.dataModBox = childUI
+
+    local ui_width = 0
+    for _, column in pairs(childUI.columns) do
+        ui_width = ui_width + column.size
+    end
+    childUI:setWidth(ui_width)
+
+    self:setWidth(offset_x + ui_width + UI_BORDER_SPACING)
 end
 
 function ISInspectWindow:onObjectListMouseDown(target, item)
@@ -180,35 +164,55 @@ function ISInspectWindow:onObjectListMouseDown(target, item)
 end
 
 function ISInspectWindow:updateObjectListBox()
-    local objectListWidth = 150
     self.objectListBox:clear()
     for key, object in pairs(self.objectList) do
         local displayName = IsoHelper.getInfoName(object)
         self.objectListBox:addItem(displayName, object)
-        objectListWidth = math.max(objectListWidth, self.textManager:MeasureStringX(self.objectListBox.font, displayName) + 65)
     end
-    self.objectListBox.selected = #self.objectListBox.items
-    self.objectListBox:setWidth(objectListWidth)
-
-    self.dataListBox:setX(objectListWidth + 15)
-    self.dataListBox.uiLabel:setX(objectListWidth + 15)
 end
 
 function ISInspectWindow:updateDataListBox()
-    local selected = self.objectListBox.selected
+    local selected = self.objectListBox.selected or 1
     local item = self.objectListBox.items[selected]
     local isoObject = item.item
     local data = IsoHelper.getInfoClass(isoObject)
 
-    local dataListWidth = 150
     self.dataListBox:clear()
     for key, field in pairs(data.fields) do
         self.dataListBox:addItem(field.name, field)
-        local width1 = self.textManager:MeasureStringX(self.dataListBox.font, tostring(field.name))
-        local width2 = self.textManager:MeasureStringX(self.dataListBox.font, tostring(field.type))
-        local width3 = self.textManager:MeasureStringX(self.dataListBox.font, tostring(field.value))
-        dataListWidth = math.max(dataListWidth, width1 + width2 + width3 + 65)
     end
 
-    self.dataListBox:setWidth(600)
+    self.dataModBox:clear()
+    self:parseModData(isoObject)
+end
+
+function ISInspectWindow:parseModData(obj)
+    local modDataWidth = 150
+    local modData = obj and obj.getModData and obj:getModData()
+    if modData then
+        modDataWidth = self:recursiveTableParse(modData)
+    else
+        self.dataModBox:addItem("No modData found.", nil)
+    end
+    return modDataWidth
+end
+
+
+function ISInspectWindow:recursiveTableParse(_t, _ident)
+    _ident = _ident or ""
+    local tM = getTextManager()
+    local stringWidth = 150
+    local s
+    for k,v in pairs(_t) do
+        if type(v)=="table" then
+            s = tostring(_ident).."["..tostring(k).."]  =  "
+            self.dataModBox:addItem(s, nil)
+            self:recursiveTableParse(v, _ident.."    ")
+        else
+            s = tostring(_ident).."["..tostring(k).."]  =  "..tostring(v)
+            self.dataModBox:addItem(s, nil)
+        end
+        if s then stringWidth = math.max(stringWidth, tM:MeasureStringX(self.dataModBox.font, s)+30) end
+    end
+    return stringWidth
 end
