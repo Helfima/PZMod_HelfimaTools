@@ -1,4 +1,4 @@
-IsoHelper = {}
+IsoHelper = IsoHelper or {}
 IsoHelper.readFunction = false
 
 IsoHelper.funcNames = {
@@ -78,6 +78,7 @@ IsoHelper.dumpIsoObject = function(isoObject)
         data['z'] = isoObject:getZ()
     end
     if instanceof(isoObject, 'IsoGameCharacter') then
+        data['uid'] = isoObject:getUID()
         data['is_npc'] = isoObject:isNPC()
         data['is_zombie'] = isoObject:isZombie()
         data['is_female'] = isoObject:isFemale()

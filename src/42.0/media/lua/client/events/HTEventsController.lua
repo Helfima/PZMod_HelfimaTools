@@ -190,6 +190,40 @@ function HTEventsController.OnZombieDead(zombie)
     HTEventsController.OnDataEvent(dataEvent)
 end
 
+function HTEventsController.OnCharacterDeath(character)
+    local data = IsoHelper.dumpIsoObject(character)
+    local description = "Character:" .. tostring(data['id'])
+    description = description .. " IsZombie:" .. tostring(data['is_zombie'])
+
+    local dataEvent = {}
+    dataEvent.name = "OnCharacterDeath"
+    dataEvent.description = description
+    dataEvent.parameters = {}
+    dataEvent.parameters["character"] = character
+    HTEventsController.OnDataEvent(dataEvent)
+end
+
+---@param object: IsoMovingObject - The object that collided into the other object.
+---@param collided: IsoObject - The object that was collided into.
+function HTEventsController.OnObjectCollide(object, collided)
+    local data = IsoHelper.dumpIsoObject(object)
+    local description = "IsoMovingObject:" .. tostring(data['id'])
+    description = description .. " is_zombie:" .. tostring(data['is_zombie'])
+    
+    local data2 = IsoHelper.dumpIsoObject(collided)
+    description = description .. " IsoObject:" .. tostring(data2['id'])
+
+
+    local dataEvent = {}
+    dataEvent.name = "OnObjectCollide"
+    dataEvent.description = description
+    dataEvent.parameters = {}
+    dataEvent.parameters["object"] = object
+    dataEvent.parameters["collided"] = collided
+    HTEventsController.OnDataEvent(dataEvent)
+end
+
+--Events.OnObjectCollide.Add(HTEventsController.OnObjectCollide)
 Events.OnWeaponHitCharacter.Add(HTEventsController.OnWeaponHitCharacter)
 Events.OnWeaponHitThumpable.Add(HTEventsController.OnWeaponHitThumpable)
 Events.OnWeaponHitTree.Add(HTEventsController.OnWeaponHitTree)
@@ -197,5 +231,6 @@ Events.OnWeaponHitXp.Add(HTEventsController.OnWeaponHitXp)
 Events.OnWeaponSwing.Add(HTEventsController.OnWeaponSwing)
 Events.OnWeaponSwingHitPoint.Add(HTEventsController.OnWeaponSwingHitPoint)
 Events.OnHitZombie.Add(HTEventsController.OnHitZombie)
+Events.OnCharacterDeath.Add(HTEventsController.OnCharacterDeath)
 Events.OnZombieDead.Add(HTEventsController.OnZombieDead)
 

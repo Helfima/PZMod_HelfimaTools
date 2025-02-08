@@ -35,8 +35,8 @@ end
 function ISInspectWindow:new(x, y, width, height, character)
     local o = {};
     if x == 0 and y == 0 then
-       x = (getCore():getScreenWidth() / 2) - (width / 2);
-       y = (getCore():getScreenHeight() / 2) - (height / 2);
+       x = (getCore():getScreenWidth() / 6);
+       y = (getCore():getScreenHeight() / 6);
     end
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self);
@@ -178,7 +178,8 @@ function ISInspectWindow:updateDataListBox()
     local data = IsoHelper.getInfoClass(isoObject)
 
     self.dataListBox:clear()
-    for key, field in pairs(data.fields) do
+    local sorter = function(t,a,b) return t[b].name > t[a].name end
+    for key, field in spairs(data.fields, sorter) do
         self.dataListBox:addItem(field.name, field)
     end
 

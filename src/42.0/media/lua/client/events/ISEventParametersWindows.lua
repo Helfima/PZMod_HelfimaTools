@@ -33,8 +33,8 @@ end
 function ISEventParametersWindows:new(x, y, width, height, character)
     local o = {};
     if x == 0 and y == 0 then
-       x = (getCore():getScreenWidth() / 2) - (width / 2);
-       y = (getCore():getScreenHeight() / 2) - (height / 2);
+       x = (getCore():getScreenWidth() / 4);
+       y = (getCore():getScreenHeight() / 3);
     end
     o = ISCollapsableWindow:new(x, y, width, height);
     setmetatable(o, self);
